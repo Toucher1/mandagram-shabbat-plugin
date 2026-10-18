@@ -2,9 +2,9 @@
   <a href="README.md">🇷🇺 Перейти к русской версии</a>
 </p>
 
-# MandaGram Shabbat Enforcer Plugin (C ABI) v1.0.0
+# MandaGram Shabbat Enforcer Plugin (C ABI) v2.0.0
 
-A native **C** plugin for the **MandaGram** client ([mandagram.com](https://mandagram.com)) that enforces Shabbat observance: gracefully closing the messenger during holy hours to ensure total rest and peace of mind.
+A native **C** plugin for the **MandaGram** client ([mandagram.com](https://mandagram.com)) that enforces Shabbat observance: gracefully locking the messenger interface with an overlay during holy hours and blocking outgoing messages without crashing or abruptly exiting the application.
 
 Built in strict compliance with the **MandaGram C ABI SDK** specification (Java Foreign Function & Memory API bridge).
 
@@ -12,11 +12,12 @@ Built in strict compliance with the **MandaGram C ABI SDK** specification (Java 
 
 ## 🕊️ Key Features
 
-* **Startup Gatekeeper**: If MandaGram is launched during Shabbat, the plugin immediately presents a warning notification and terminates the application before any chats or network connections load.
-* **Background Watcher**: A lightweight background watchdog thread checks the local system time every 15 seconds. The moment Shabbat begins, a prompt notification is displayed and the client exits cleanly.
+* **Interface Overlay (Overlay Mode)**: When Shabbat arrives, a clean full-size overlay displaying *“🕯️ Shabbat Shalom! 🕯️”* is activated over the MandaGram window, preventing access to chats and calls while keeping the client running safely.
+* **Message Transmission Interception (TDLib / FFI Hook)**: The plugin registers a `register_message_send_hook` that blocks outgoing message transmission at the network layer during Shabbat hours.
+* **Background Watchdog**: A lightweight background watchdog thread checks local system time and smoothly shows or hides the overlay as Shabbat begins and ends.
 * **Cross-Platform Support**:
-  * **Windows**: Native system modal dialog (`MessageBoxA` with `MB_SYSTEMMODAL` priority) and clean termination via `ExitProcess`.
-  * **Linux**: Desktop alert via `zenity` (with fallback to `stderr`) and multithreading via POSIX `pthread`.
+  * **Windows**: Native Win32 overlay with full Unicode support (UTF-8, emojis, Segoe UI typography via `DrawTextW`), responsive message pump (`MsgWaitForMultipleObjects`), and leak-free GDI descriptor management.
+  * **Linux**: Native X11 overlay with scalable UTF-8 font support (`Xutf8DrawString`), positioned strictly over MandaGram without locking down the rest of the user's desktop environment.
 * **Instant Debug Mode**: Single preprocessor flag to simulate Shabbat on demand for development and testing.
 
 ---
@@ -25,8 +26,8 @@ Built in strict compliance with the **MandaGram C ABI SDK** specification (Java 
 
 | Day of Week | Time | Status |
 | :--- | :--- | :--- |
-| **Friday** | Starting at **18:00 (6:00 PM)** | Shabbat begins (access blocked, client exits) |
-| **Saturday** | All day until **21:30 (9:30 PM)** | Shabbat continues (access blocked) |
+| **Friday** | Starting at **18:00 (6:00 PM)** | Shabbat begins (interface locked, message sending blocked) |
+| **Saturday** | All day until **21:30 (9:30 PM)** | Shabbat continues (interface locked) |
 | **Saturday** | After **21:30 (9:30 PM)** | Shabbat ends (access restored) |
 | **Sunday – Thursday** | 24 / 7 | Normal operation |
 
@@ -52,7 +53,7 @@ To verify the plugin behavior immediately without waiting for Friday evening:
    ```c
    #define FORCE_SHABBAT_DEBUG 1
    ```
-3. Rebuild the plugin (`make`). When launched in MandaGram, the client will immediately trigger the Shabbat exit prompt (*"Shabbat Shalom! Telegram is strictly forbidden during Shabbat."*).
+3. Rebuild the plugin (`make`). When launched in MandaGram, the client will immediately activate the lock screen: *“🕯️ Shabbat Shalom! 🕯️ Interface is locked until Saturday 21:30.”*.
 
 ---
 
@@ -113,7 +114,7 @@ make clean
    * **Windows**: `%APPDATA%\MandaGram\plugins\` (or the `plugins/` directory adjacent to `MandaGram.exe`)
 3. Start MandaGram. The client log will confirm initialization:
    ```text
-   [Shabbat] Плагин контроля Шаббата инициализирован.
+   [Shabbat] Shabbat Enforcer v2.0 (Overlay Mode) успешно активирован.
    ```
 
 ---

@@ -123,6 +123,11 @@ typedef struct PluginApi {
 #endif
 
 typedef bool (*PluginInitFn)(const PluginApi* api);
+typedef void (*PluginDeinitFn)(void);
+
+PLUGIN_EXPORT const PluginMetadata* mandagram_plugin_metadata(void);
+PLUGIN_EXPORT bool mandagram_plugin_init(const PluginApi* api);
+PLUGIN_EXPORT void mandagram_plugin_deinit(void);
 
 #ifdef __cplusplus
 }

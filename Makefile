@@ -18,7 +18,7 @@ linux: $(OUT_DIR)
 	@echo "Linux plugin built: $(LIB_LINUX)"
 
 windows: $(OUT_DIR)
-	$(WIN_CC) -O2 -Wall -Wextra -std=c11 -Iinclude -shared $(SRC) -o $(LIB_WINDOWS) -lgdi32 -luser32
+	$(WIN_CC) $(CFLAGS) -shared $(SRC) -o $(LIB_WINDOWS) -lgdi32 -luser32
 	@echo "Windows plugin built: $(LIB_WINDOWS)"
 
 both: linux windows
