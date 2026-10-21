@@ -1,0 +1,2 @@
+# Exclude Makefile from GitHub Linguist language statistics
+Makefile -linguist-detectable
